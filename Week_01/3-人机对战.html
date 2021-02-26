@@ -1,0 +1,195 @@
+<!-- 
+  人机对战
+  先出手，立于不败之地
+  后出手，十字位必输
+-->
+<style>
+  .cell {
+    width: 100px;
+    height: 100px;
+    background-color: green;
+    display: inline-block;
+    border: solid 1px white;
+    vertical-align: middle;
+    line-height: 100px;
+    font-size: 50px;
+    text-align: center;
+  }
+</style>
+<div id="board"></div>
+<script>
+  //2 => ❌ 1 => ⭕️
+  let pattern = [
+    0, 0, 0,
+    0, 1, 0,
+    0, 0, 0
+  ];
+  let color = 2; //代表下一个将被添加到棋盘的棋子
+
+  function show() {
+    let board = document.getElementById("board");
+    board.innerHTML = ""; //每次调用先清空重新创建
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        let cell = document.createElement("div");
+        cell.classList.add("cell"); //设置类名
+        //一维数组的位置用乘法来处理
+        cell.innerText =
+          pattern[i * 3 + j] === 2
+            ? "❌"
+            : pattern[i * 3 + j] === 1
+            ? "⭕️"
+            : "";
+        cell.addEventListener("click", () => userMove(j, i));
+        board.appendChild(cell);
+      }
+      board.appendChild(document.createElement("br"));
+    }
+  }
+
+  function userMove(x, y) {
+    pattern[y * 3 + x] = color; //设置棋盘中的棋子
+
+    if (check(pattern, color)) {
+      //检测是否有一方获胜
+      alert(color === 2 ? "❌ is winner" : "⭕️ is winner");
+    }
+    //该对方走了
+    color = 3 - color; //每次调用在1和2之间切换
+
+    show(); //重新生成board
+    computerMove();//电脑移动
+
+    if (willWin(pattern, color)) {
+      console.log(color === 2 ? "❌ will win!" : "⭕️ will win!");
+    }
+  }
+
+  function computerMove(){
+    //找到当前下子的最优点
+    let choice = bestChoice(pattern,color);
+    //如果找到了就走这个点
+    if(choice.point){
+      pattern[choice.point[1]*3 + choice.point[0]] = color;
+    }
+    if(check(pattern,color)){
+      //检测是否有一方获胜
+      alert(color === 2 ? "❌ is winner" : "⭕️ is winner");
+    }
+    color = 3 - color;//换对方下
+    show();//重新渲染棋盘
+  }
+
+
+  //校验color是否赢了
+  function check(pattern, color) {
+    //纯函数：与外部无关
+    for (let i = 0; i < 3; i++) {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i*3 + j] !== color) {
+          //只要有一行不全部等于color,就代表没有赢
+          win = false;
+        }
+      }
+      if (win) return win;
+    }
+
+    for (i = 0; i < 3; i++) {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        //只要有一列不完全等于color,就没有赢
+        if (pattern[j*3 + i] !== color) {
+          win = false;
+        }
+      }
+      if (win) return true;
+    }
+    //右对角线，是否全等
+    {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[j * 3 + 2 - j] !== color) {
+          win = false;
+        }
+      }
+      if (win) return true;
+    }
+    //左对角线是否全等
+    {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[j * 3 + j] !== color) {
+          win = false;
+        }
+      }
+      if (win) return true;
+    }
+  }
+
+  // 拷贝一个对象
+  function clone(pattern) {
+    //利用继承来节省内存空间
+    return Object.create(pattern);
+  }
+
+  // 判断接下来color是否会赢
+  function willWin(pattern, color) {
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i*3 + j]) continue; //如果不为空节点，直接跳过
+        let temp = clone(pattern); //拷贝一份原对象，用于程序模拟下一步的所有可能，不影响原来的对象
+        temp[i*3 + j] = color; //每个为空的位置都会被设置一遍，然后进行check是否获胜
+        if (check(temp, color)) {
+          return [j, i];
+        }
+      }
+    }
+    //所有空格都模拟过了，走到这代表color下一步不能赢
+    return null;
+  }
+
+  //判断我方能否能赢(我方先手)
+  //result:1代表能赢 result:0代表和棋
+  function bestChoice(pattern, color) {
+    let p;
+    //如果我方下一步能赢
+    if ((p = willWin(pattern, color))) {
+      return {
+        point: p,
+        result: 1,
+      };
+    }
+
+    let result = -2, //假设一个最小的-2,不能达到的结果
+      point = null;
+
+    //遍历棋盘每个点，模拟下棋的各种走法，递归直到一方获胜或者和棋（终止条件）
+    outer: for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i*3 + j]) continue;
+        let temp = clone(pattern);
+        temp[i*3 + j] = color;
+
+        //对方走一步，判断对方是否能赢（result:1能赢,result:0不能赢,result:-1会输）
+        let r = bestChoice(temp, 3 - color).result;
+
+        // -(-1) > -0 > -1 > -2
+        if (-r > result) {
+          //期望对方会输，也就是r:-1，所以模拟所有走法，尽可能求出 r = -1 对方会输； r = 0次之，双方平局 ； r = 1最坏情况，对方会赢
+          result = -r;
+          point = [j, i];
+          //胜负剪枝（已经计算出可以获胜的走法之后，就不再继续计算）
+          if (result === 1) {
+            break outer; //退出外层循环
+          }
+        }
+      }
+    }
+    return {
+      point,
+      result: point ? result : 0,
+    };
+  }
+  show(pattern);
+</script>

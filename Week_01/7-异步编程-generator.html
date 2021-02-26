@@ -1,0 +1,73 @@
+
+<style>
+  div{
+    background-color:grey;
+    display:inline-block;
+    margin:30px;
+    width:100px;
+    height:100px;
+    border-radius:50px;
+  }
+  .green.light{
+    background-color:green;
+  }
+  .yellow.light{
+    background-color:yellow;
+  }
+  .red.light{
+    background-color:red;
+  }
+</style>
+<div class="green"></div>
+<div class="yellow"></div>
+<div class="red"></div>
+<script>
+  function light(color){
+    let lights = document.getElementsByTagName('div');
+
+    for(var i=0;i<3;i++){
+      lights[i].classList.remove('light');
+    }
+    document.getElementsByClassName(color)[0].classList.add('light');
+  }
+
+  function sleep(seconds){
+    return new Promise((resolve)=>{
+      setTimeout(resolve,seconds);
+    })
+  }
+
+  function* go(){
+    let btn = document.getElementById('next');
+    while(true){
+      light('green');
+      yield sleep(500);
+      light('yellow');
+      yield sleep(400)
+      light('red');
+      yield sleep(300)
+    }
+  }
+  //接收一个generator函数产生的generator对象
+  // 递归调用generator.next
+  function run(generator){
+    let { value, done } = generator.next();
+    if(done) return;
+    if(value instanceof Promise){
+      value.then(()=>{
+        run(generator)
+      })
+    }
+  }
+
+  //效仿co框架
+  function co(generatorFn){
+    return function(){
+      return run(generatorFn())
+    }
+  }
+  go = co(go);
+
+  go();
+</script>
+

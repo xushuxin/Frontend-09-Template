@@ -1,0 +1,30 @@
+
+<script>
+  // async generator 和 for await of的组合应用
+
+  function sleep(seconds){
+    return new Promise((resolve)=>{
+      setTimeout(resolve,seconds);
+    })
+  }
+  
+  //async generator 返回的是一个 Promise，其值为generator对象，具备iterator接口
+  async function* counter(){
+    let c =0;
+    while(true){
+      await sleep(1000)
+      yield c++;
+    }
+  }
+  let g =  counter();
+  console.log(g)
+  console.log(g.next())
+  console.log(g.next())
+  // (async function(){
+  //   //每次循环先await等待上次异步生成yield完成，调用next()获取value赋值给c
+  //   for await (let c of counter()){
+  //     console.log(c)
+  //   }
+  // }())
+</script>
+

@@ -1,0 +1,48 @@
+
+<style>
+  div{
+    background-color:grey;
+    display:inline-block;
+    margin:30px;
+    width:100px;
+    height:100px;
+    border-radius:50px;
+  }
+  .green.light{
+    background-color:green;
+  }
+  .yellow.light{
+    background-color:yellow;
+  }
+  .red.light{
+    background-color:red;
+  }
+</style>
+<div class="green"></div>
+<div class="yellow"></div>
+<div class="red"></div>
+<script>
+  function light(color){
+    let lights = document.getElementsByTagName('div');
+
+    for(var i=0;i<3;i++){
+      lights[i].classList.remove('light');
+    }
+    document.getElementsByClassName(color)[0].classList.add('light');
+  }
+
+  function go(){
+    light('green');
+    setTimeout(()=>{
+      light('yellow');
+      setTimeout(()=>{
+        light('red')
+        setTimeout(()=>{
+          go()
+        },1000)
+      },2000)
+    },3000)
+  }
+  go()
+</script>
+
