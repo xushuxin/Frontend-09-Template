@@ -1,0 +1,56 @@
+<style>
+  .cell {
+    line-height: 7px;
+    vertical-align: top;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: gray;
+    border-bottom: solid 1px white;
+    border-right: solid 1px white;
+  }
+
+  #container {
+    width: 701px;
+  }
+</style>
+
+<div id="container"></div>
+
+<button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+<script>
+  class Sorted {
+    constructor(data, compare) {
+      this.data = data.slice(); //复制一下数组
+      this.compare = compare || ((a, b) => a - b); //默认的比较方案（和sort一样）
+    }
+    take() {
+
+      if (!this.data.length) return; //这里不返回null的原因是，列表项存储的对象理论上可以是null
+      let data  = this.data;
+      let min = this.data[0]; //假设第一个就是最小的
+      let minIndex = 0;
+      for(var i = 1;i < data.length;i++){
+          //将每一项与假设的最小值进行比较
+          //如果比假设的最小值还小，min保存该值
+          if(this.compare(data[i],min)<0){
+            min = data[i];
+            minIndex = i;
+          }
+      }
+      //比较完一轮后，得到真正的最小值
+      //小技巧：不使用splice直接删除最小值会影响后续所有项的索引：O(n)，
+      //而是将最小项的位置赋值为最后一项，再删除最后一项，不会影响其他项：O(1)
+      data[minIndex] = data[data.length-1];
+      data.pop();
+      return min;//返回获取到的最小值
+    }
+    give(v){
+        this.data.push(v);
+    }
+    get length(){
+      return this.data.length;
+    }
+  }
+
+</script>

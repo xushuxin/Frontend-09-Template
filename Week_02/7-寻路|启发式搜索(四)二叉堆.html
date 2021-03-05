@@ -1,0 +1,288 @@
+<style>
+  .cell {
+    line-height: 7px;
+    vertical-align: top;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: gray;
+    border-bottom: solid 1px white;
+    border-right: solid 1px white;
+  }
+  #container {
+    width: 701px;
+  }
+</style>
+
+<div id="container"></div>
+
+<button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+<button onclick="localStorage.removeItem('map');location.reload()">clear</button>
+<script>
+  class BinaryHeap {
+    constructor(data, compare) {
+      this.data = data.slice(); //复制一下数组
+      this.compare = compare || ((a, b) => a - b); //默认的比较方案（和sort一样）
+    }
+    take() {
+      if (!this.data.length) return; //这里不返回null的原因是，列表项存储的对象理论上可以是null
+      let data = this.data;
+      let min = this.data[0]; //假设第一个就是最小的
+      let i = 0;
+      while (i < this.data.length) {
+        if (i * 2 + 1 >= this.data.length) {
+          break;
+        }
+        if (i * 2 + 2 >= this.data.length) {
+          this.data[i] = this.data[i * 2 + 1];
+          i = i * 2 + 1;
+          break;
+        }
+
+        if (this.compare(this.data[i * 2 + 1], this.data[i * 2 + 2]) < 0) {
+          this.data[i] = this.data[i * 2 + 1];
+          i = i * 2 + 1;
+        } else {
+          this.data[i] = this.data[i * 2 + 2];
+          i = i * 2 + 2;
+        }
+      }
+
+      if (i < this.data.length - 1) {
+        this.insertAt(i, this.data.pop());
+      } else {
+        this.data.pop();
+      }
+      return min;
+    }
+    insertAt(i, v) {
+      this.data[i] = v;
+
+      while (i > 0 && this.compare(v, this.data[Math.floor((i - 1) / 2)]) < 0) {
+        this.data[i] = this.data[Math.floor((i - 1) / 2)];
+        this.data[Math.floor((i - 1) / 2)] = v;
+        i = Math.floor((i - 1) / 2);
+      }
+    }
+
+    insert(v) {
+      console.log(v);
+      //在尾部插入一个元素
+      this.insertAt(this.data.length, v);
+    }
+    get length() {
+      return this.data.length;
+    }
+  }
+  // class BinaryHeap {
+  //   constructor(data, compare) {
+  //     this.data = data.slice();
+  //     this.compare = compare || ((a, b) => a - b);
+  //   }
+
+  //   //取出堆顶元素（最小）
+  //   //再把子节点中较大的放到堆顶
+  //   //每一级空出的节点都由下一个级中较小的节点来填充
+  //   //直到最后一层
+  //   take() {
+  //     if(!this.data.length) return;
+  //     let min = this.data[0],
+  //       i = 0;
+  //     while (i < this.data.length) {
+  //       //如果没有下一级，代表当前位最后一级，停止循环
+  //       if (this.data[Math.floor(i * 2 + 1)] === void 0) break;
+  //       //如果下一级只有左节点，没有右节点，直接取左节点来填充,再停止循环
+  //       //（因为插入时就是按照完美最小二叉树去生成的，没有右节点就不可能有下一级的左节点，所以可以判断为最后一级）
+  //       if (this.data[Math.floor(i * 2 + 2)] === void 0) {
+  //         this.data[i] = this.data[Math.floor(i * 2 + 1)];
+  //         break;
+  //       }
+  //       //取子节点中较小的赋值给当前节点，并将指针指向取出的子节点的索引（为其位置寻找可填充的子节点）
+  //       if (
+  //         this.compare(
+  //           this.data[Math.floor(i * 2 + 1)],
+  //           this.data[Math.floor(i * 2 + 2)]
+  //         ) < 0
+  //       ) {
+  //         this.data[i] = this.data[Math.floor(i * 2 + 1)];
+  //         i = i * 2 + 1;
+  //       } else {
+  //         this.data[i] = this.data[Math.floor(i * 2 + 2)];
+  //         i = i * 2 + 2;
+  //       }
+  //     }
+
+  //     //全部节点顺位填充后，需要删除最后一级多余的节点（已填充给倒数第二级）
+  //     //如果需要删除的不是最后一个节点，需要删除最后一个节点，再将删除的节点的值放到多余的节点的位置
+  //     //如果正好是最后一个节点，直接pop即可
+  //     //此做法是为了优化splice直接删除对后续元素索引的影响
+  //     if(i<this.data.length-1){
+  //       this.insertAt(i,this.data.pop());//用删除的元素替换多余节点
+  //     }else{
+  //       this.data.pop();
+  //     }
+
+  //     return min;
+  //   }
+  //   insert(item){
+  //     //在数组尾部插入一个元素
+  //     this.insertAt(this.data.length,item);
+  //   }
+
+  //   //按照最小二叉树规则进行插入节点，插入之后的节点在合适的位置（比父节点小，比子节点大）
+  //   insertAt(i,item) {
+  //     this.data[i] = item;
+
+  //     //+ 当有上一个节点
+  //     //+ 并且当前插入的元素比父节点小
+  //     while (
+  //       i > 0 &&
+  //       this.compare(this.data[i], this.data[Math.floor((i - 1) / 2)]) < 0
+  //     ) {
+  //       // 如果当前节点小于其父节点，则交换位置
+  //       // let temp = this.data[i];//temp不需要，因为item已经保存了我们需要的值
+  //       this.data[i] = this.data[Math.floor((i - 1) / 2)];
+  //       this.data[Math.floor((i - 1) / 2)] = item;
+  //       i = Math.floor((i - 1) / 2);
+  //     }
+  //   }
+
+  //   get length() {
+  //     return this.data.length;
+  //   }
+  // }
+</script>
+<script>
+  //从本地缓存中获取数据
+  //使用一维数组
+  let map = localStorage["map"]
+    ? JSON.parse(localStorage["map"])
+    : Array(10000).fill(0);
+  //test
+  let endPoint = [53, 57];
+  findPath(map, [0, 0], endPoint);
+
+  let container = document.getElementById("container");
+
+  for (let y = 0; y < 100; y++) {
+    for (let x = 0; x < 100; x++) {
+      let cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.setAttribute("data-point", `x=${x},y=${y}`); //标记每个cell的坐标
+      //一维数组表示二维的技巧
+      //外层循环总次数*当前外层循环索引 + 内存循环当前索引
+      if (map[100 * y + x] === 1) {
+        cell.style.backgroundColor = "black";
+      }
+      //终点坐标，标红
+      if (y === endPoint[1] && x === endPoint[0]) {
+        console.log(y, x);
+        cell.style.backgroundColor = "red";
+      }
+      //监听鼠标移动
+      cell.addEventListener("mousemove", () => {
+        //如果鼠标处于按下状态
+        if (mousedown) {
+          //如果是右击，删除
+          if (clear) {
+            cell.style.backgroundColor = "";
+            map[100 * y + x] = 0; //0代表路
+          } else {
+            //否则是左击，变成墙
+            cell.style.backgroundColor = "black";
+            map[100 * y + x] = 1; //1代表墙
+          }
+        }
+      });
+
+      container.appendChild(cell);
+    }
+  }
+
+  let mousedown = false;
+  let clear = false;
+
+  //设置鼠标按下状态
+  document.addEventListener("mousedown", (e) => {
+    console.log(e.which, "----", e.keyCode);
+    mousedown = true;
+    clear = e.which === 3; //3代表鼠标右键，清除状态
+  });
+
+  //取消鼠标按下状态
+  document.addEventListener("mouseup", () => (mousedown = false));
+
+  //阻止右击出现菜单
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  function sleep(t) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, t);
+    });
+  }
+
+  async function getPath(x, y, start, end, container, path, table) {
+    //终点坐标，标红
+    container.children[y * 100 + x].style.backgroundColor = "pink";
+    //每次循环获取当前点的pre，一直到初始点
+    while (x !== start[0] && y !== start[1]) {
+      path.push(map[y * 100 + x]); //记录路径
+      [x, y] = table[y * 100 + x]; //获取当前点的pre的x,y值，赋值给x,y
+      await sleep(30); //看划出路径的效果
+      container.children[y * 100 + x].style.backgroundColor = "purple";
+    }
+    return path;
+  }
+  //寻路算法（广度优先）
+  /*
+        map 地图
+        start 起点
+        end 终点
+      */
+  async function findPath(map, start, end) {
+    let table = Object.create(map); //继承的方式，继承了所有的属性，修改这个对象不影响原对象
+    //☆ 更换数据结构
+    let heap = new BinaryHeap([start], (a, b) => distance(a) - distance(b));
+
+    async function insert(x, y, pre) {
+      //超出地图的边界
+      if (x < 0 || x > 99 || y < 0 || y > 99) return;
+
+      if (table[y * 100 + x]) return; //如果不是0直接返回（1代表墙或者pre对象代表已搜索过该点）
+
+      container.children[y * 100 + x].style.backgroundColor = "skyblue"; //把搜索到的点变为其他颜色（可视化）
+      await sleep(1); //看划出路径的效果
+      table[y * 100 + x] = pre; //1.记录当前点是由哪个点扩展而来 2.也起到防重复搜索的标记作用
+
+      heap.insert([x, y]); //☆ 搜索到的点入队
+    }
+
+    //☆ 计算两点之间距离的平方
+    function distance(point) {
+      //求当前点到目标点距离（勾股定理）
+      //因为没有小数，对于比较没有影响，所以省去开根号
+      return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2;
+    }
+    let path = [];
+    while (heap.length) {
+      let [x, y] = heap.take(); //☆ 取出队列中距离目标点最近的点
+      if (x === end[0] && y === end[1]) {
+        return getPath(x, y, start, end, container, path, table);
+      }
+      //等待上一个插入完再插入下一个
+      //记录当前点是由哪个点扩展而来
+      await insert(x - 1, y, [x, y]); //左
+      await insert(x, y - 1, [x, y]); //上
+      await insert(x + 1, y, [x, y]); //右
+      await insert(x, y + 1, [x, y]); //下
+
+      await insert(x - 1, y - 1, [x, y]); //左上
+      await insert(x - 1, y + 1, [x, y]); //左下
+      await insert(x + 1, y - 1, [x, y]); //右上
+      await insert(x + 1, y + 1, [x, y]); //右下
+    }
+    return null;
+  }
+  //test
+  findPath(map, [0, 0], [53, 57]);
+</script>

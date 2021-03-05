@@ -1,0 +1,146 @@
+<style>
+  .cell {
+    line-height: 7px;
+    vertical-align: top;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: gray;
+    border-bottom: solid 1px white;
+    border-right: solid 1px white;
+  }
+  #container {
+    width: 701px;
+  }
+</style>
+
+<div id="container"></div>
+
+<button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+<script>
+  //从本地缓存中获取数据
+  //使用一维数组
+  let map = localStorage["map"]
+    ? JSON.parse(localStorage["map"])
+    : Array(10000).fill(0);
+
+  let container = document.getElementById("container");
+
+  for (let y = 0; y < 100; y++) {
+    for (let x = 0; x < 100; x++) {
+      let cell = document.createElement("div");
+      cell.classList.add("cell");
+      //一维数组表示二维的技巧
+      //外层循环总次数*当前外层循环索引 + 内存循环当前索引
+      if (map[100 * y + x] === 1) {
+        cell.style.backgroundColor = "black";
+      }
+      //终点坐标，标红
+      if (y === 20 && x === 20) {
+        console.log(y, x);
+        cell.style.backgroundColor = "red";
+      }
+      //监听鼠标移动
+      cell.addEventListener("mousemove", () => {
+        //如果鼠标处于按下状态
+        if (mousedown) {
+          //如果是右击，删除
+          if (clear) {
+            cell.style.backgroundColor = "";
+            map[100 * y + x] = 0; //0代表路
+          } else {
+            //否则是左击，变成墙
+            cell.style.backgroundColor = "black";
+            map[100 * y + x] = 1; //1代表墙
+          }
+        }
+      });
+
+      container.appendChild(cell);
+    }
+  }
+
+  let mousedown = false;
+  let clear = false;
+
+  //设置鼠标按下状态
+  document.addEventListener("mousedown", (e) => {
+    console.log(e.which, "----", e.keyCode);
+    mousedown = true;
+    clear = e.which === 3; //3代表鼠标右键，清除状态
+  });
+
+  //取消鼠标按下状态
+  document.addEventListener("mouseup", () => (mousedown = false));
+
+  //阻止右击出现菜单
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  //①
+  function sleep(t) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, t);
+    });
+  }
+
+  //寻路算法（广度优先）
+  /*
+    map 地图
+    start 起点
+    end 终点
+  */
+  async function path(map, start, end) {
+    var queue = [start];
+    async function insert(x, y) {
+      //超出地图的边界
+      if (x < 0 || x > 99 || y < 0 || y > 99) return;
+
+      if (map[y * 100 + x]) return; //如果不是0直接返回（1代表墙或者2代表已搜索过该点）
+
+      await sleep(1); //暂停1ms,让浏览器可以处理页面绘制，否则无法看到ui效果
+      container.children[y * 100 + x].style.backgroundColor = "skyblue"; //把搜索到的点变为其他颜色（可视化）
+
+      map[y * 100 + x] = 2; //搜索到的点标记为2，防止再次搜索
+
+      queue.push([x, y]); //搜索到的点入队
+    }
+
+    while (queue.length) {
+      let [x, y] = queue.shift(); //取出队列的队头
+      console.log(x, y);
+      if (x === end[0] && y === end[1]) {
+        //终点坐标，标红
+        container.children[y * 100 + x].style.backgroundColor = "pink";
+        return true;
+      } //如果找到了终点返回true
+      if (x + 1 === end[0] && y === end[1]) {
+        //终点坐标，标红
+        container.children[y * 100 + x + 1].style.backgroundColor = "pink";
+        return true;
+      }
+      if (x === end[0] && y + 1 === end[1]) {
+        //终点坐标，标红
+        container.children[(y + 1) * 100 + x].style.backgroundColor = "pink";
+        return true;
+      }
+      if (x - 1 === end[0] && y === end[1]) {
+        //终点坐标，标红
+        container.children[y * 100 + x - 1].style.backgroundColor = "pink";
+        return true;
+      }
+      if (x === end[0] && y - 1 === end[1]) {
+        //终点坐标，标红
+        container.children[(y - 1) * 100 + x].style.backgroundColor = "pink";
+        return true;
+      }
+      //等待上一个插入完再插入下一个
+      await insert(x - 1, y);
+      await insert(x, y - 1);
+      await insert(x + 1, y);
+      await insert(x, y + 1);
+    }
+    return false;
+  }
+  //test
+  path(map, [0, 0], [20, 20]);
+</script>
