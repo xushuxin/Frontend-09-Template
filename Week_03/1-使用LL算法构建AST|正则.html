@@ -1,0 +1,20 @@
+<script>
+//正则表达式：数字 | 空格、制表符 | 回车符、换行符(终结符) | 乘号 | 除号 | 加号 | 减号
+//注意开启全局匹配，才会每次从剩余字符中匹配
+var reg = /([0-9\.]+)|([\s\t]+)|([\r\n])|(\*)|(\/)|(\+)|(\-)/g;
+
+var dictionary = ["Number", "WhiteSpace", "LineTerminator", "*", "/", "+", "-"];
+
+function tokenize(source){
+    var result = null;
+    while(true){
+        result = reg.exec(source);
+        if(!result) break;
+        for(var i =1; i<=dictionary.length;i++){
+            if(result[i]) console.log(dictionary[i-1]);//打印出当前匹配的字符串的类型
+        }
+        console.log(result);//打印匹配结果
+    }
+}
+tokenize("1024 + 10 * 25")
+</script>

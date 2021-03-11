@@ -1,0 +1,150 @@
+<script>
+    //正则表达式：数字 | 空格、制表符 | 回车符、换行符(终结符) | 乘号 | 除号 | 加号 | 减号
+    //注意开启全局匹配，才会每次从剩余字符中匹配
+    var regexp = /([0-9\.]+)|([\s\t]+)|([\r\n])|(\*)|(\/)|(\+)|(\-)/g;
+    
+    var dictionary = ["Number", "WhiteSpace", "LineTerminator", "*", "/", "+", "-"];
+    
+    function* tokenize(source){
+        var result = null;
+        var lastIndex = 0;
+        while(true){
+            lastIndex = regexp.lastIndex;//记录正则表达式的这一次匹配的起始索引
+            result = regexp.exec(source);
+            if(!result) break;
+            //下次匹配的起始索引减去这次的起始索引，如果全部是符合规则的字符的话，一定会等于当前匹配的字符串的长度
+            //如果有不等说明中间跳过了不符合词法规则的字符
+            if(regexp.lastIndex - lastIndex > result[0].length) throw Error('有不认识的单词');
+            let token = {
+                type: null,
+                value: null
+            };
+            for(var i =1; i<=dictionary.length;i++){
+                if(result[i]) {
+                    token.type = dictionary[i-1];//标记type
+                };
+            }
+            token.value = result[0];//标记值
+            yield token;//生成一个节点
+        }
+        //全部词法解析完成后，添加一个终结符token
+        yield {
+            type:'EOF'//End Of File,表示终结
+        }
+    }
+    let source= [];
+    //利用generator生成可遍历的数据结构
+    for(let token of tokenize("10 + 25 + 2")){
+        if(token.type !== 'WhiteSpace' && token.type!=='LineTerminator'){
+            source.push(token);
+        }
+    }
+   
+
+    function MultiplicativeExpression(source){  
+        //如果第一项是数字，将其包装成MultiplicativeExpression类型
+        if(source[0].type === 'Number'){
+            let node  = {
+                type:'MultiplicativeExpression',
+                children:[source[0]]//把第一项放入到children数组中
+            };
+            source[0] = node;//覆盖原来的第一项
+            return MultiplicativeExpression(source)//递归调用，再次分析后续项
+        }
+        //如果类型是MultiplicativeExpression，并且后一项为乘法操作符
+        if(source[0].type === 'MultiplicativeExpression' && source[1] && source[1].type === '*'){
+            let node  = {
+                type: 'MultiplicativeExpression',
+                operator:'*',
+                children:[]
+            }
+            //将前三项全部放入到一个MultiplicativeExpression的children数组中
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            source.unshift(node);//生成后的token，当做第一项
+            return MultiplicativeExpression(source);//继续分析
+        }
+
+         //如果类型是MultiplicativeExpression，并且后一项为除法操作符
+         if(source[0].type === 'MultiplicativeExpression' && source[1] && source[1].type === '/'){
+            let node  = {
+                type: 'MultiplicativeExpression',
+                operator:'/',
+                children:[]
+            }
+            //将前三项依次放入到一个MultiplicativeExpression的children数组中
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            source.unshift(node);//生成后的token，当做第一项
+            return MultiplicativeExpression(source);//继续分析
+        }
+
+        //如果类型是MultiplicativeExpression，但是后面没有跟乘号或者除号
+        //直接返回这个token
+        if(source[0].type === 'MultiplicativeExpression'){
+            return source[0];
+        }
+
+        //其他情况默认递归自己（此代码不会执行。。。。）
+        return MultiplicativeExpression(source);
+    }
+
+
+    function AdditiveExpression(source){
+        //如果是乘法表达式，我们也要将其视为加法（特殊的，0次）
+        if(source[0].type === 'MultiplicativeExpression'){
+            let node = {
+                type:'AdditiveExpression',
+                children:[source[0]]
+            };
+            source[0] = node;
+            return AdditiveExpression(source);
+        }
+
+        //如果是AdditiveExpression，并且后面跟着+号
+        //将前三项全放入一个type为AdditiveExpression的token的children中
+        if(source[0].type === 'AdditiveExpression' && source[1] && source[1].type === '+'){
+            let node = { 
+                type: 'AdditiveExpression',
+                operator:'+',
+                children:[]
+            };
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            //因为第三项是非终结符，所以要将其处理成MultiplicativeExpression
+            MultiplicativeExpression(source);
+            node.children.push(source.shift());
+            source.unshift(node);
+            return AdditiveExpression(source);
+        }
+         //如果是AdditiveExpression，并且后面跟着-号
+        if(source[0].type === 'AdditiveExpression' && source[1] && source[1].type === '-'){
+            let node = {
+                type:'AdditiveExpression',
+                operator:'-',
+                children:[]
+            };
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            MultiplicativeExpression(source);
+            node.children.push(source.shift());
+            source.unshift(node);
+            return AdditiveExpression(source)
+        }
+
+        //如果是AdditiveExpression，且后面没有符号，直接返回生成的AdditiveExpression
+        if(source[0].type === 'AdditiveExpression'){
+            return source[0];
+        }
+        //首次type===‘Number’,会走这里，将其包装成MultiplicativeExpression替换为source的第一项
+        MultiplicativeExpression(source);
+
+        return AdditiveExpression(source);
+    }
+    
+    //test 
+    console.log('source',source)
+    console.log(AdditiveExpression(source));
+    </script>
