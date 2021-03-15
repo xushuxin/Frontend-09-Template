@@ -1,0 +1,67 @@
+<script>
+  function find(source, pattern) {
+    let startCount = 0;
+    //统计pattern中存在多少个*号
+    for (let i = 0; i < pattern.length; i++) {
+      if (pattern[i] === "*") {
+        startCount++;
+      }
+    }
+    //如果pattern中没有*号
+    //表示完全source需要和pattern完全相同
+    if (startCount === 0) {
+      for (let i = 0; i < pattern.length; i++) {
+        if (pattern[i] !== source[i]) {
+          return false;
+        }
+      }
+    }
+
+    let i = 0,
+      startIndex = 0;
+
+    //处理第一个*号之前的字符串
+    for (i = 0; pattern[i] !== "*"; i++) {
+      //如果当前字符不是 ？ ，？可以表示任意字符
+      //则必须一一相等
+      if (pattern[i] !== source[i] && pattern[i] !== "?") {
+        return false;
+      }
+    }
+
+    lastIndex = i; //lastIndex指向第一个*的位置
+
+    //处理第一个*号到最后一个*号之间的字符串
+    for (let p = 0; p < startCount - 1; p++) {
+      i++;
+      let subPattern = "";
+      while (pattern[i] !== "*") {
+        subPattern += pattern[i];
+        i++;
+      }
+      let reg = new RegExp(subPattern.replace(/\?/g,'[\\s\\S]'),'g');
+      reg.lastIndex = lastIndex;
+      debugger
+    //   console.log(reg.exec(source));
+      let res  = reg.exec(source);
+      console.log(res)
+      if(!res) return false;
+
+      lastIndex = reg.lastIndex;
+    }
+
+    //处理结尾部分的字符串
+    //从最后一个字符开始遍历，直到遍历到 * 结束 
+    for(let j = 1;pattern[pattern.length-j]!=='*';j++){
+        //如果当前字符不是 ？ ，？可以表示任意字符
+        //则必须一一相等
+        if(pattern[pattern.length-j] !== source[source.length-j] && pattern[pattern.length-j] !== '?'){
+            return false;
+        }
+    }
+    return true;
+  }
+  //test
+//   find('abcabcabxaac','a*b*bx*c');
+//   find('abcabcabxaac','a*b?*b?x*c');
+</script>

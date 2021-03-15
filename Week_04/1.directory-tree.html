@@ -1,0 +1,66 @@
+<script>
+//  字符串分析算法|字典树
+ let $ = Symbol("$");
+  class Trie {
+    constructor() {
+      //使用一个对象保存字典树
+      this.root = Object.create(null);
+    }
+    insert(word) {
+      let node = this.root;
+      //遍历要插入的字符串
+      for (let c of word) {
+        //如果字典树中没有保存这个字符
+        if (!node[c]) {
+          //创建key为该字符的对象
+          node[c] = Object.create(null);
+        }
+        //node指向对象内部，下次循环判断该
+        node = node[c];
+      }
+      //循环结束，到这里时，node指向最里面一层的对象
+      //使用Symbol来表示唯一key，初始化数量为0，
+      //这里的数量代表的就是和当前插入的word的出现次数
+      if (!($ in node)) {
+        node[$] = 0;
+      }
+      //数量加1
+      node[$]++;
+    }
+    most() {
+      let max =0,maxCode;
+    
+      const visit = (node, word) => {
+          if(node[$] &&node[$]>max){
+              max = node[$];
+              maxCode = word;
+          }
+          for(let key in node){
+            //递归，深度优先
+            //key代表的就是当前层级保存的字符串
+            //传入拼接后的word，为了最后知道保存的时那个字符串
+            visit(node[key],word+key);
+          }
+      };
+      visit(this.root,'');
+      console.log(`出现次数最多的字符是：${maxCode},出现次数：${max}`)
+    }
+  }
+
+  //产生length长度的随机a-z组合字符串
+  function randomWord(length) {
+    var s = "";
+    for (let i = 0; i < length; i++) {
+      //产生a-z的随机字母
+      //fromCharCode只取整数部分转为字符，相当于向下取整
+      s += String.fromCharCode(Math.random() * 26 + "a".charCodeAt(0));
+    }
+    return s;
+  }
+  //创建空的字典树
+  let trie = new Trie();
+  //向字典树中插入十万个长度为4的字符串
+  for (let i = 0; i < 100000; i++) {
+    trie.insert(randomWord(4));
+  }
+</script>
