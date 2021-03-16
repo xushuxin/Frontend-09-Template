@@ -41,7 +41,6 @@
       }
       let reg = new RegExp(subPattern.replace(/\?/g,'[\\s\\S]'),'g');
       reg.lastIndex = lastIndex;
-      debugger
     //   console.log(reg.exec(source));
       let res  = reg.exec(source);
       console.log(res)
@@ -53,8 +52,7 @@
     //处理结尾部分的字符串
     //从最后一个字符开始遍历，直到遍历到 * 结束 
     for(let j = 1;pattern[pattern.length-j]!=='*';j++){
-        //如果当前字符不是 ？ ，？可以表示任意字符
-        //则必须一一相等
+        //如果当前字符不是 ？ 则必须一一相等 （？可以表示任意字符）
         if(pattern[pattern.length-j] !== source[source.length-j] && pattern[pattern.length-j] !== '?'){
             return false;
         }
