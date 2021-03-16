@@ -1,8 +1,8 @@
 <script>
 //正则表达式：数字 | 空格、制表符 | 回车符、换行符(终结符) | 乘号 | 除号 | 加号 | 减号
 //注意开启全局匹配，才会每次从剩余字符中匹配
-var reg = /(^\d+(\.\d+)?$)|([\s\t]+)|([\r\n])|(\*)|(\/)|(\+)|(\-)/g;
-
+var reg = /(\d+(?:\.\d+)?)|([\s\t]+)|([\r\n])|(\*)|(\/)|(\+)|(\-)/g;
+// (^\d+(\.\d+)?$)
 var dictionary = ["Number", "WhiteSpace", "LineTerminator", "*", "/", "+", "-"];
 
 function tokenize(source){
@@ -16,5 +16,5 @@ function tokenize(source){
         console.log(result);//打印匹配结果
     }
 }
-tokenize("1024 + 10 * 25")
+tokenize("10.24. + 10 * 25")
 </script>
