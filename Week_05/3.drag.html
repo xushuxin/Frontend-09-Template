@@ -1,0 +1,27 @@
+<div id="dragable" style="height:100px;width:100px;background:pink;"></div>
+<script>
+    let dragable = document.getElementById('dragable');
+    let baseX = 0, baseY = 0;//这里默认初始化为0,如果需要考虑本来就存在translate:transform的元素拖动，可用getComputedStyle获取值
+    // let transform = getComputedStyle(dragable).transform.match(/matrix\(.+,\s*(\d+)\s*,\s*(\d+)\s*\)$/);
+    // let baseX = +transform[1], baseY = +transform[2];//这里默认初始化为0,如果需要考虑本来就存在translate:transform的元素拖动，可用getComputedStyle获取值
+    // console.log(baseX)
+    dragable.addEventListener('mousedown',(e)=>{
+        let startX = e.clientX,startY = e.clientY;
+        let move = (e) => {
+            console.log(e)
+            //当前坐标减去起始坐标为移动距离
+            //还需要加上之前拖拽移动的距离
+            dragable.style.transform = `translate(${ baseX + e.clientX - startX}px,${baseY + e.clientY - startY}px)`;
+        };
+        //抬起鼠标时移除事件
+        let up = (e) => {
+            // 鼠标抬起时记录当前的transform值
+            baseX = baseX + e.clientX -startX;
+            baseY = baseY + e.clientY -startY;
+            document.removeEventListener('mousemove',move);
+            document.removeEventListener('mouseup',up);
+        }
+        document.addEventListener('mousemove',move)
+        document.addEventListener('mouseup',up)
+    })
+</script>

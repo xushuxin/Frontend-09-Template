@@ -1,0 +1,76 @@
+<script>
+
+  let callbacks = new Map();//因为我们需要用对象作为key，所以使用map
+
+  let usedReactivities = [];//用于存储使用过的对象和属性
+
+  let reactivities = new Map;//用于缓存已创建的Proxy对象
+
+  let object = {
+    a: {
+        b: 1
+    },
+    b: 2,
+  };
+
+  let po = reactive(object);
+  
+  effect(()=>{
+    // console.log('callback execute',po.a);
+    // 每次访问po.a时，触发get，因为po.a是对象，所以我们调用reactive将其处理成proxy对象
+    // 如果不做缓存处理每次访问到po.a时都会创建新的proxy对象，缓存可以减少不必要的proxy对象的创建
+    console.log('callback execute',po.a.b);
+    // po.a
+  })
+
+  function effect(callback){
+    usedReactivities = [];//每次调用effect之前清空usedReactivities存储的内容
+    callback();//important 首次调用一次callback，callback中只要用到reactive创建的proxy对象的属性，就会触发proxy对象的get，在get中我们可以存入这些对象和属性
+    // console.log(usedReactivities);
+    for(let [obj,prop] of usedReactivities){
+        //如果对象没有初始化map，则初始化
+        if(!callbacks.has(obj)) {
+            callbacks.set(obj, new Map);
+        }
+        //如果对象中对应属性没有初始化数组，则将对应属性初始化数组
+        if(!callbacks.get(obj).has(prop)){
+            callbacks.get(obj).set(prop,[]);
+        } 
+        //把callback存入到对应对象的map的对应属性的数组中(没存储过才存储)
+        if(!callbacks.get(obj).get(prop).includes(callback)){
+            callbacks.get(obj).get(prop).push(callback);
+        }
+
+    }
+  }
+
+
+  function reactive(object) {
+    if(reactivities.has(object)) return reactivities.get(object);//如果缓存已存在该Proxy，直接返回，没有必要再创建
+    let proxy = new Proxy(object, {
+      set(obj, prop, val) {//obj指向原对象
+        // console.log(obj, prop, val);
+        obj[prop] = val;
+        if(callbacks.has(obj)&&callbacks.get(obj).has(prop)){
+            for (let callback of callbacks.get(obj).get(prop)){
+                callback()
+            }
+        }
+      },
+      get(obj, prop) {
+        // console.log(obj, prop);
+        usedReactivities.push([obj,prop]);//这里存入callback执行时，内部使用过的对象和对应属性
+
+        //属性值是对象需要代理一下（po.a是对象，需要被代理），以支持po.a.b这种访问会触发effect callback执行
+        //但是又导致一个新的问题，每次get触发，返回的是新的proxy对象，所以，需要做一下缓存处理，让同个属性的多次get触发，返回同一个proxy对象
+        //但是就当前需要实现的功能来看，不做缓存也没有问题,因为我们代理的都是同一个对象（可能减少一点性能损耗？）
+        if(typeof obj[prop] === 'object'){
+            return reactive(obj[prop]);
+        }
+        return obj[prop];
+      },
+    });
+    reactivities.set(object, proxy);//缓存prxoy对象
+    return proxy;
+  }
+</script>
