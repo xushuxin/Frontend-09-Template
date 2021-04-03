@@ -220,8 +220,8 @@ UTF8_Encoding('哈哈哈')
     - 用类似f()这样的语法调用函数时，会访问到`[[call]]`这个行为
 
 + 特殊对象
-    Array:`[[length]]`会随着元素的数量增减而变化
-    Object.prototype: 没有setPrototypeOf方法，调用会失效
+    - Array:`[[length]]`会随着元素的数量增减而变化
+    - Object.prototype: 没有setPrototypeOf方法，调用会失效
 
 + 宿主对象（Host Object）
     - 提供JavaScript语言不支持，但是JavaScript语法支持的一些特性（只要语法支持，宿主对象理论上都可以实现）
