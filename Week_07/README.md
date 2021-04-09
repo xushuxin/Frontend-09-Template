@@ -214,15 +214,18 @@ function NumberToString(num,radix){
     - for(表达式 in 表达式) 语句
     - for(表达式 of 表达式) 语句
     for await (of)
-+ WithStatement with打开一个对象，把所有对象的属性放到一个作用域中，这些属性在作用域中可以直接使用
++ WithStatement
+ with打开一个对象，把所有对象的属性放到一个作用域中，这些属性在作用域中可以直接使用
 + LabelledStatement 给语句起名字（比如给IterationStatement命名，可以使用break通过名字来终止语句）
 + TryStatement (try...catch...finally)
 
 BreakStatement和ContinueStatement：
+
 返回值：
-    - `[[type]]`:break continue
-    - `[[value]]`:--
-    - `[[target]]`:label
+- `[[type]]`:break continue
+- `[[value]]`:--
+ - `[[target]]`:label
+
 可以结合labelledStatement，结束/跳过命名的循环，节省不必要的循环
 
 try
@@ -239,6 +242,7 @@ try{
     - `[[type]]`:return
     - `[[value]]`:--
     - `[[target]]`:label
+
 特殊性：
 + 括号不可删除
 + 在函数中，try和catch中return并不能终止finally中语句的执行（但是try语句之后的代码不会执行）
@@ -322,6 +326,7 @@ console.log(a);//1
 + 直接量/变量/this ...
 
 **宏任务和微任务**
+
 微任务：js引擎遇到一个Promise，会将整个代码分成两个任务执行，同步任务先执行，then中的回调函数，会在下个任务执行(这个任务需要等待Promise resolve)
 
 宏任务：将拆分后的任务依次执行的过程
