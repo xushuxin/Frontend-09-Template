@@ -213,11 +213,13 @@ function NumberToString(num,radix){
     - for(表达式;表达式;条件表达式;) 语句
     - for(表达式 in 表达式) 语句
     - for(表达式 of 表达式) 语句
-    for await (of)
+    - for await (of)
 + WithStatement
- with打开一个对象，把所有对象的属性放到一个作用域中，这些属性在作用域中可以直接使用
-+ LabelledStatement 给语句起名字（比如给IterationStatement命名，可以使用break通过名字来终止语句）
-+ TryStatement (try...catch...finally)
+    - with打开一个对象，把所有对象的属性放到一个作用域中，这些属性在作用域中可以直接使用
++ LabelledStatement 
+    - 给语句起名字（比如给IterationStatement命名，可以使用break通过名字来终止语句）
++ TryStatement 
+    - (try...catch...finally)
 
 BreakStatement和ContinueStatement：
 
@@ -239,9 +241,10 @@ try{
 }
 ```
 返回值：
-    - `[[type]]`:return
-    - `[[value]]`:--
-    - `[[target]]`:label
+
+- `[[type]]`:return
+- `[[value]]`:--
+- `[[target]]`:label
 
 特殊性：
 + 括号不可删除
