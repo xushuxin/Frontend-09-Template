@@ -162,7 +162,7 @@ class ResponseParser{
         //进入请求体的查找
         }else if(this.current === this.WAITTING_BODY){
             this.bodyParser.receiveChar(char);
-            console.log(char)
+            // console.log(char)
         }
     }
 }
@@ -233,5 +233,5 @@ void async function(){
         }
     })
     let res = await request.send();
-    console.log('请求结果',res);
+    console.log('请求结果',res.body);
 }()
