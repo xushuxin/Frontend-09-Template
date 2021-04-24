@@ -1,44 +1,145 @@
-学习笔记
-
-#### HTML解析成DOM树
-第一步 HTML parse模块的文件拆分
-+ 为了方便管理，把parser单独拆分到一个文件中
-+ parser接收HTML文本作为参数，返回一颗DOM树
-
-第二步 HTML的解析
-+ 用FSM(有限状态机)来实现解析
-+ 在HTML标准中，已经规定了HTML的状态
-+ Toy-Browser只挑选其中一部分状态，完成一个最简版本
-
-第三步 
-+ 主要的标签有：开始标签，结束标签和自封闭标签
-+ 这一步暂时忽略属性
-
-第四步 
-+ 在状态机中，除了状态迁移，我们还要加入业务逻辑（创建token，把字符加到token上，最后emit token）
-+ 在标签的结束状态提交标签token(开始标签和结束标签，从词法角度分为了两个token)
-
-第五步 处理属性
-+ 属性值分为单引号、双引号、无引号三种写法，因此需要较多状态处理
-+ 处理属性的方式跟标签类似
-+ 属性结束时，我们把属性加到标签Token上
-
-第六步 用token构建DOM树
-+ 从标签构建DOM树的基本技巧是使用栈
-+ 遇到开始标签时创建元素并入栈，遇到结束标签时出栈
-+ 自封闭节点可视为入栈后立即出栈
-+ 任何元素的父元素是它入栈前的栈顶
-
-第七步 将文本节点加到DOM树
-+ 通过一个全局变量来控制当前元素的文本内容的拼接
-+ 为null时，代表一开始直接就是文本节点或者被其他元素标签中断过，视为当前栈顶元素的文本内容
-+ 不为null时，代表是连续的文本节点，追加到当前的content中
-```js
 let currentToken = null;
 let currentAttribute = null;
 
 let stack = [{type:'document',children:[]}]
 let currentTextNode = null;
+
+let css = require('css');
+//加入一个新的函数，addCSSRules，这里我们把CSS规则暂存到一个数组中
+let rules = [];
+function addCSSRules(text){
+    var ast = css.parse(text);
+    // console.log(JSON.stringify(ast,null,"   "));
+    rules.push(...ast.stylesheet.rules);
+    // console.log(rules)
+}
+
+/* 三种选择器的匹配：id、class、tagName */
+// 可以在这里扩展其他的选择器匹配（比如属性选择器）
+function match(element, selector){
+    //如果没有选择器 或者 元素没有attibutes属性(存放着所有的属性)
+    if(!selector || !element.attributes){//其实这里一定会有attibutes的，因为我们默认初始化了一个空数组
+        return false;
+    }
+
+    if(selector.charAt(0) === '#'){
+        //找出之前解析时存入的id属性对象
+        var attr = element.attributes.filter(attr => attr.name === 'id')[0];
+        //对比id的value和选择器是否匹配
+        if(attr && attr.value === selector.replace('#', '')){
+            return true;
+        }
+    }else if(selector.charAt(0) === '.'){
+        var classObj = element.attributes.filter(attr => attr.name === 'class')[0];
+        let classArr = classObj?classObj.value.split(' '):null;//切割类名字符串为数组(支持带空格的class类名匹配)
+        //如果类名数组中有类名匹配上选择器
+        if(classArr && classArr.includes(selector.replace('.',''))){
+            return true;
+        }
+    }else{
+        if(element.tagName === selector){
+            return true;
+        }
+    }
+    return false;
+}
+
+//统计一条css规则中，id class tag 3种选择器出现的次数
+// 可以再这里解析复合选择器
+function specificity(selector){
+    //inline id class tag
+    var p = [0, 0, 0, 0];
+    var selectorParts = selector.split(' ');
+    for(var part of selectorParts){
+        if(part.charAt(0) === '#'){//id选择器数量加1
+            p[1] += 1;
+        }else if(part.charAt(0) === '.'){//class选择器数量加1
+            p[2] += 1;
+        }else{ //tag选择器数量加1
+            p[3] += 1;
+        }
+    }  
+    return p;
+}
+//按四元组顺序比较两个选择器的优先级
+//如果高级别的选择器的数量不相等，直接就按照高级别的数量比较来决定优先级
+//如果高级别的选择器数量相同，则比较下一级别的选择器的数量
+//tag的优先级最低
+//如果最后一级的tag的数量也相等，表示两个选择器优先级相同
+function compare(sp1,sp2){
+    if(sp1[0] - sp2[0]){
+        return sp1[0] - sp2[0];
+    }
+    if(sp1[1] - sp2[1]){
+        return sp1[1] - sp2[1];
+    }
+    if(sp1[2] - sp2[2]){
+        return sp1[2] - sp2[2];
+    }
+
+    return sp1[3] - sp2[3];
+}
+
+function computeCSS(element){
+    //解析到当前元素时,stack中正好存储了所有当前元素的父元素
+    var elements = stack.slice().reverse();
+
+    if(!element.computedStyle){
+        element.computedStyle = {};
+    }
+
+    //遍历每一个css规则（一个选择器），和元素进行对比
+    for(let rule of rules){
+        //将复杂选择器（div div .myid这种）用空格拆分成数组并翻转（不考虑复合选择器）
+        var selectorParts = rule.selectors[0].split(" ").reverse();
+        
+        //将当前元素和选择器（.myid）进行匹配，匹配上了才进行后续父选择器的匹配，没匹配上直接进行下一个规则的匹配
+        if(!match(element,selectorParts[0]))
+            continue;
+
+        let matched = false;
+
+        var j = 1;//当前用于匹配的选择器的索引
+        //遍历父元素集合,将每个父元素与选择器进行对比
+        for(var i= 0;i<elements.length;i++){
+            if(match(elements[i],selectorParts[j])){//如果匹配上了，下个元素就匹配下一个选择器
+                j++;
+                if(j === selectorParts.length) break;//所有的selector都匹配到对应的元素，就可以停止遍历父元素了
+            }
+        }   
+        
+        //选择器数组中所有选择器全部匹配上了对应的父元素(全等我觉得也可以)
+        if(j >= selectorParts.length){//如果只有一个简单选择器，selectorParts的length也正好为1
+            matched = true;
+        }
+
+        if(matched){
+            //如果匹配到，我们要加入
+            // console.log("Element",JSON.stringify(element,null,'   '),"matched rule",JSON.stringify(rule,null,'   '));
+            
+            var sp = specificity(rule.selectors[0]);//统计几种标签出现的次数的数组
+
+            var computedStyle = element.computedStyle; //
+            for(let {property,value} of rule.declarations){
+                if(!computedStyle[property]){
+                    computedStyle[property] = {}
+                }
+                //首次没有优先级数组，直接保存样式和优先级列表
+                if(!computedStyle[property].specificity){
+                    computedStyle[property].value = value;
+                    computedStyle[property].specificity = sp;
+                //后续如果选择器再匹配到这个元素，就已径存在优先级列表，取出之前的优先级列表和本次的优先级列表进行对比
+                //如果之前的选择器优先级低于当前的选择器的优先级；则保存当前的样式值和优先级列表
+                }else if(compare(computedStyle[property].specificity, sp) < 0){
+                    computedStyle[property].value = value;
+                    computedStyle[property].specificity = sp;
+                }
+            }
+            // console.log(element.computedStyle)
+        }
+    }
+}
+
 
 function emit(token){
     let top = stack[stack.length - 1];
@@ -59,9 +160,13 @@ function emit(token){
                 });
             }
         }
+
+        //属性列表收集完成之后，我们已经知道这个元素有哪些style规则了，添加计算css方法调用
+        computeCSS(element);
+
         //向父元素的children数组中添加当前子元素
         top.children.push(element);
-        element.parent = top;//标记当前子元素的父元素
+        // element.parent = top;//标记当前子元素的父元素
 
         //如果不是自闭合标签，就将当前元素入栈
         if(!token.isSelfClosing){
@@ -74,6 +179,12 @@ function emit(token){
         if(top.tagName != token.tagName){
             throw new Error('Tag Start end doesn\'t match!')
         }else{
+           
+            // ++++++++++ 遇到style标签时，执行添加CSS规则的操作
+            if(top.tagName === "style"){
+                console.log(top.children[0].content)
+                addCSSRules(top.children[0].content);
+            }
             stack.pop();
         }
         currentTextNode = null;
@@ -301,146 +412,10 @@ function selfClosingStartTag(c){
 
 }
 module.exports.parseHTML = function(html){
-
    let state = data;
    for(let c of html){
        state = state(c);
    }
    state = state(EOF);
-   console.dir(stack[0])
+   return stack[0]
 }
-```
-#### CSS计算
-
-环境准备：解析css的工具`npm install css`
-
-步骤：
-第一步 收集CSS规则
-+ 遇到style标签时，我们把CSS规则保存起来
-
-+ 这里我们调用CSS Parser来分析CSS规则
-
-+ 这里我们必须要仔细研究此库分析CSS规则的格式
-
-  ![image-20210422075317133](/Users/xushuxin/Library/Application Support/typora-user-images/image-20210422075317133.png)
-```js
-let css = require('css');
-//加入一个新的函数，addCSSRules，这里我们把CSS规则暂存到一个数组中
-let rules = [];
-function addCSSRules(text){
-    var ast = css.parse(text);
-    console.log(JSON.stringify(ast,null,"   "));
-    rules.push(...ast.stylesheet.rules);
-    console.log(rules)
-}
-```
-
-第二步 添加调用
-+ 当我们创建一个元素后，立即计算CSS
-+ 理论上，当我们分析一个元素时，所有的CSS规则已经收集完毕
-+ Toy Browser 不考虑head中的style标签中CSS的计算
-+ 在真实浏览器中，可能遇到写在body中的style标签，需要重新CSS计算的情况，这里我们忽略
-
-```js
-function computeCSS(element){
-    console.log(rules);
-    console.log('computed CSS for Element',element)
-}
-
-function emit(token){
-    let top = stack[stack.length - 1];
-    if(token.type === 'startTag'){
-        let element = {
-            type:'element',
-            children:[],
-            attributes:[]
-        };
-        element.tagName = token.tagName;
-
-        //获取element的属性列表
-        for(let p in token){
-            if(p!== 'type' && p!="tagName"){
-                element.attributes.push({
-                    name:p,
-                    value:token[p]
-                });
-            }
-        }
-
-        //属性列表收集完成之后，我们已经知道这个元素有哪些style规则了，添加计算css方法调用
-        computeCSS(element);
-
-        //向父元素的children数组中添加当前子元素
-        top.children.push(element);
-        element.parent = top;//标记当前子元素的父元素
-
-        //如果不是自闭合标签，就将当前元素入栈
-        if(!token.isSelfClosing){
-            stack.push(element);
-        }
-
-        currentTextNode = null;
-
-    }else if(token.type === 'endTag'){
-        if(top.tagName != token.tagName){
-            throw new Error('Tag Start end doesn\'t match!')
-        }else{
-            // ++++++++++ 遇到style标签时，执行添加CSS规则的操作
-            if(top.tagName === "style"){
-                addCSSRules(top.children[0].content);
-            }
-            stack.pop();
-        }
-        currentTextNode = null;
-    } else if(token.type === 'text'){//处理文本节点
-        if(currentTextNode === null){
-            currentTextNode = {
-                type:'text',
-                content:''
-            };
-            top.children.push(currentTextNode)//放到当前栈顶元素的children数组中
-        }
-        currentTextNode.content += token.content;//拼接当前栈顶元素的文本内容
-    }
-       
-}
-```
-
-第三步 获取父元素序列
-+ 在computeCSS函数中，我们必须知道元素所有父元素才能判断元素与规则是否匹配
-+ 我们从上一步骤的stack，可以获取本元素所有的父元素
-+ 因为我们首先获取的是“当前元素”，所以我们获取和计算父元素匹配的顺序是从内向外
-比如：`div div #myid`
-前面两个`div`是子孙元素选择器，不确定是和哪个父元素匹配，而最后一个`#myid`是一定会和当前元素匹配的
-
-    修改computeCSS函数：
-    ```js
-    function computeCSS(element){
-        //解析到当前元素时,stack中正好存储了所有当前元素的父元素
-        var element = stack.slice().reverse();
-    }
-    ```
-第四步 选择器与元素的匹配
-+ 选择器也要从当前元素向外排列
-+ 复杂选择器拆成针对单个元素的选择器，用循环匹配父元素队列
-+ 暂时不考虑复合选择器的解析
-
-第五步 选择器与元素匹配
-+ 根据选择器的类型和元素属性，计算是否与当前元素匹配
-+ 这里仅仅实现了三种基本选择器，实际的浏览器中要处理复合选择器
-+ 作业（可选）：实现复合选择器 , 实现支持空格的Class选择器
-
-第六步
-+ 一旦选择器匹配上，就应用选择器对应的样式到元素上，形成computedStyle
-
-第七步
-+ CSS规则根据specificity和后来优先规则覆盖
-+ specificity是个四元组，越左边权重越高
-+ 一个CSS规则的specificity根据包含的简单选择器相加而成
-```js
-    specificity:[0,     0,      0,      0]
-                inline  id      class   tag
-    例如： div div #id 和 div #id
-    它的specificity是 [0, 1, 0, 2] 和 [0, 1, 0, 1]
-```
-
