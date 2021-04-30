@@ -25,6 +25,7 @@
  if(itemStyle.flex){//如果子元素有flex属性，表示该元素可伸缩，则这个元素一定可以放进第一行，不管剩余多少空间
     flexLine.push(item);
 // TODO 这里可能有问题 isAutoMainSize的判断（父元素设置了nowrap和主轴尺寸按理说也能进这个逻辑才对）
+//并且：就算交叉轴没有设置尺寸，但是还是应该将这个元素放入当前行才对
 }else if(style.flexWrap === 'nowrap' && isAutoMainSize){//如果设置了不换行，并且父元素没有设置主轴尺寸，也是所有子元素放入第一行
     mainSpace -= itemStyle[mainSize];// 主轴剩余的空间减去当前放入第一行的元素主轴尺寸
     if(itemStyle[crossSize] !== null && itemStyle[crossSize] !== (void 0)){//如果子元素在交叉轴方向有设置尺寸
@@ -42,8 +43,8 @@
     mainSpace -= itemStyle[mainSize];// 主轴剩余的空间减去当前放入第一行的元素主轴尺寸
     if(itemStyle[crossSize] !== null && itemStyle[crossSize] !== (void 0)){//如果子元素在交叉轴方向有设置尺寸
         crossSpace = Math.max(crossSpace, itemStyle[crossSize]);//交叉轴的空间取子元素交叉轴方向的尺寸最大的
-        flexLine.piush(item);//当前元素放入第一行
     }
+    flexLine.piush(item);//就算交叉轴没有设置尺寸，但是还是应该将这个元素放入当前行才对
 } 
 ```
 ②
