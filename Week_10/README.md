@@ -38,7 +38,7 @@
  if(itemStyle.flex){//如果子元素有flex属性，表示该元素可伸缩，则这个元素一定可以放进第一行，不管剩余多少空间
     flexLine.push(item);
  // 只要是nowrap都可以进这个逻辑，而和父元素自动撑开无关
-}else if(style.flexWrap === 'nowrap'){//如果设置了不换行，并且父元素没有设置主轴尺寸，也是所有子元素放入第一行
+}else if(style.flexWrap === 'nowrap'){//如果设置了不换行，也是所有子元素放入第一行
     mainSpace -= itemStyle[mainSize];// 主轴剩余的空间减去当前放入第一行的元素主轴尺寸
     if(itemStyle[crossSize] !== null && itemStyle[crossSize] !== (void 0)){//如果子元素在交叉轴方向有设置尺寸
         crossSpace = Math.max(crossSpace, itemStyle[crossSize]);//交叉轴的空间取子元素交叉轴方向的尺寸最大的
@@ -61,7 +61,7 @@ if(style.flexWrap === 'nowrap' || isAutoMainSize){ //如果设置了不换行，
 修改后
 ```js
 //是否换行只和flexWrap有关
-if(style.flexWrap === 'nowrap'){ //如果设置了不换行，(或者主轴的尺寸自动撑开) 
+if(style.flexWrap === 'nowrap'){ //如果设置了不换行
     // 第一行（总共只有一行）的交叉轴尺寸，优先取用户设置的交叉轴尺寸，没有再取当前行最大子元素的交叉轴尺寸
     flexLine.crossSpace = style[crossSize] !== undefined ?style[crossSize] : crossSpace
 }else{//换行的情况
