@@ -1,5 +1,7 @@
 const net = require('net');//TCP/IP包，用于创建TCP连接
 const parser = require('./parser.js');
+const render = require('./render.js');
+const images = require('images');
 class Request{
     constructor(options){
         this.method = options.method || 'GET';//默认GET请求
@@ -231,13 +233,15 @@ void async function(){
             home:'anhui',
         }
     })
-    // request.send().then(res=>{
-    //     console.log('获得数据',res)
-    // });
-    // setTimeout(()=>{
-    //     console.log('timeout')
-    // },1000)
     let response = await request.send();
     let dom  = parser.parseHTML(response.body);
-    console.log(JSON.stringify(dom,null,"    "));
+
+
+    //渲染
+    let viewport = images(800,600)
+
+    render(viewport,dom);
+
+    viewport.save('viewport.jpg')
+   console.log(JSON.stringify(dom,null,"    "));
 }()

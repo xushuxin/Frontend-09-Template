@@ -9,37 +9,33 @@ http.createServer((request,response)=>{
     }).on('end',() => {
         body = Buffer.concat(body).toString();//请求结束时将Buffer数组转为字符串
         response.writeHead(200,{'Content-Type':'text/html'});
-        setTimeout(()=>{
-            response.end(`<html>
+        response.end(`<html>
         <head>
-          <meta charset="UTF-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>Document</title>
           <style>
-            body div #myid{
-                background:red;
-                width:100px;
-                color:red;
-                height:40px;
+            #container{
+                display:flex;
+                width:500px;
+                height:300px;
+                background-color:rgb(255,255,255);
             }
-            body div .myclass{
-                color:green;
-                height:20px;
+            #container #myid{
+              width:200px;
+              height:100px;
+              background-color:rgb(255,0,0);
             }
-            body div p{
-                background-color:yellow;
-            }
+           #container .c1{
+               flex:1;
+               background-color:rgb(0,255,0);
+           }
           </style>
         </head>
         <body>
-            <div>
-                <span id="myid" class="myclass testclass">66666</span>
-                <p>why not support chinese?</p>
+            <div id="container">
+                <span id="myid"></span>
+                <div class="c1"></div>
             </div>
         </body>
         </html>`)
-        },5000)
-        
     })
 
 }).listen(8088);
