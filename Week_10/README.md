@@ -69,6 +69,7 @@ if(style.flexWrap === 'nowrap'){ //如果设置了不换行
 }
 ```
 2. 在根据justify-content计算元素位置时，老师好像没有根据方向去加减step
+
 修改后代码：
 ```js
  if(style.justifyContent === 'space-around'){//两端对齐，前后各留间隔的一半
