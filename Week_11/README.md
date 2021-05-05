@@ -250,13 +250,13 @@ content content content content
 - vertical-align
 - 盒模型系列：margin，padding，border
 
-思考
 
-**为什么first-letter可以设置display:block之类，而first-line不行呢?**
+
+**第9节思考题作业 为什么first-letter可以设置display:block之类，而first-line不行呢?**
 答：我认为：first-line选中的是排版之后的第一行，只有排版之前去设置好display才有用，排版之后就没有办法去设置了
 
 
-**作业：编写一个 match 函数。它接收两个参数，第一个参数是一个选择器字符串性质，第二个是一个 HTML 元素。这个元素你可以认为它一定会在一棵 DOM 树里面。通过选择器和 DOM 元素来判断，当前的元素是否能够匹配到我们的选择器。（不能使用任何内置的浏览器的函数，仅通过 DOM 的 parent 和 children 这些 API，来判断一个元素是否能够跟一个选择器相匹配。）以下是一个调用的例子。**
+**第9节课后作业：编写一个 match 函数。它接收两个参数，第一个参数是一个选择器字符串性质，第二个是一个 HTML 元素。这个元素你可以认为它一定会在一棵 DOM 树里面。通过选择器和 DOM 元素来判断，当前的元素是否能够匹配到我们的选择器。（不能使用任何内置的浏览器的函数，仅通过 DOM 的 parent 和 children 这些 API，来判断一个元素是否能够跟一个选择器相匹配。）以下是一个调用的例子。**
 ```js
 function match(selector, element){
     return true;
