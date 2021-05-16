@@ -12,16 +12,17 @@
             /* flex-wrap:wrap; */
             justify-content: space-around;
             /* width:300px; */
-            width: 600px;
+            width: 200px;
             flex-direction:row;
         }
         .box div{
             width:100px;
             height:100px;
         }
+        /* flex元素在主轴剩余空间不足时，主轴尺寸会被设置为0 */
         .box .child1{
             background:skyblue;
-            /* flex:1; */
+            flex:1;
         }
         .box .child2{
             background:pink;

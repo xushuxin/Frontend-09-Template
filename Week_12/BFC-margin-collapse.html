@@ -1,0 +1,10 @@
+<!-- 创建BFC对边距折叠的影响 -->
+<body>
+    <div style="width:100px;height:100px;background:aqua;margin:20px;"></div>
+    <!-- overflow设置为visible时，下面的div没有产生新的BFC，内部元素的margin和上面的div的margin发生折叠 -->
+    <!-- overflow设置为hidden时，下面的div产生新的BFC，内部元素的margin不会和上面的div的margin发生折叠 -->
+    <!-- 默认情况下overflow为visible -->
+    <div style="overflow:hidden;background:pink;">
+        <div style="width:100px;height:100px;background:aqua;margin:20px;"></div>
+    </div>
+</body>

@@ -306,9 +306,9 @@ function layout(element){
         crossBase = 0;
     }
 
-
+    //根据align-content属性，纠正crossBase（元素排版的起始位置），以及初始化step（行与行的间隔）的大小
     var step;//行与行之间的间隔
-    // 以row为例
+    // 以flex-direction:row为例
     if(style.alignContent === 'flex-start'){//上对齐
         crossBase += 0;
         step = 0;
@@ -323,7 +323,7 @@ function layout(element){
         step = 0;
     }
     if(style.alignContent === 'space-between'){//上下两端对齐
-        crossSpace += 0;
+        crossBase += 0;
         step = crossSpace / (flexLines.length - 1);//行与行之间的间隔等于： 剩余空间 除以 元素个数减1
     }
     if(style.alignContent === 'space-around'){//上下两端对齐，并且两端有1/2行间隔
@@ -333,7 +333,7 @@ function layout(element){
 
     if(style.alignContent === 'stretch'){//拉伸元素的交叉轴尺寸，填充满纵向，从头开始，没有间隔
         crossBase += 0;
-        step =0;
+        step = 0;
     }
 
     flexLines.forEach(function(items){
@@ -349,7 +349,8 @@ function layout(element){
             //对齐方式由子元素自身的align-self属性或者容器的align-items属性决定，align-self优先级高
             var align = itemStyle.alignSelf || style.alignItems;
             
-            //以flex-direction:row为例
+            //以flex-direction:row为例,此时crossStart：top  crossEnd：bottom crossBase = 0
+            //以flex-direction:row-reverse为例,此时crossStart：bottom  crossEnd：top crossBase = 容器的交叉轴尺寸
 
             if(align === 'flex-start'){//如果是上对齐
                 itemStyle[crossStart] = crossBase;//记录子元素起始位置
@@ -369,10 +370,10 @@ function layout(element){
             if(align === 'stretch'){//拉伸
                 itemStyle[crossStart] = crossBase;//子元素的开始位置
                 if(itemStyle[crossSize] === void 0){//stretch模式下子元素没有设置交叉轴尺寸，直接设置为当前行的高度
-                    itemStyle[crossEnd] = crossBase + crossSign * lineCrossSize;
-                    itemStyle[crossSize] = lineCrossSize;
+                    itemStyle[crossEnd] = crossBase + crossSign * lineCrossSize;//子元素的结束位置，开始位置 +/- 当前元素的交叉轴尺寸（拉伸后的）
+                    itemStyle[crossSize] = lineCrossSize;//交叉轴的尺寸就设置为其拉伸后的尺寸
                 }else{
-                    itemStyle[crossEnd] = crossBase + crossSign * itemStyle[crossSize];//有设置高度就不进行拉升了
+                    itemStyle[crossEnd] = crossBase + crossSign * itemStyle[crossSize];//有设置高度就不进行拉升了，只计算元素结束位置即可
                 }
             }
 
