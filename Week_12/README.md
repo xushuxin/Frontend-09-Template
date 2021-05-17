@@ -315,7 +315,7 @@ W3C体系中使用的是HSL，主要是由于其对称性，但是HSL和HSV是�
     - box-shadow
     - border-radius
 + 文字
-    - font 既会印象layout排版环节，也会影响绘制环节，在文字的字体文件中规定了每个文字的字形叫做glyph，和矢量图差不多，最后会被以类似矢量图的方式画到图片上
+    - font 既会影响layout排版环节，也会影响绘制环节，在文字的字体文件中规定了每个文字的字形叫做glyph，和矢量图差不多，最后会被以类似矢量图的方式画到图片上
     - text-decoration
 + 位图
     - background-image
