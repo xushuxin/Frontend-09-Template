@@ -1,0 +1,23 @@
+<div id="a">123<span style="background-color:pink;">456789</span>0123456789</div>
+<script>
+    let range = new Range()
+    console.log(document.getElementById('a').childNodes[0])
+    console.log(document.getElementById('a').childNodes[2])
+    // 设置range的起点为a元素第一个子节点（也就是文本节点"123"）向右偏移三个字符，也就是3后面
+    range.setStart(document.getElementById('a').childNodes[0], 3);
+     // 设置range的终点为a元素第三个子节点（也就是文本节点"0123456789"）向右偏移三个字符，也就是字符2后面
+    range.setEnd(document.getElementById('a').childNodes[2], 3);
+
+    /*如果想移除span标签的内容，但是想留下span标签 */
+    //可以设置开始节点为span,偏移量为0，这样span的开始标签被留下，而结束标签会创建一个新的放到开始标签后面
+    range.setStart(document.getElementById('a').childNodes[1], 0);
+    range.setEnd(document.getElementById('a').childNodes[2], 3);
+
+    /* Range还可以移除半个标签 */
+    // 找到要删除一半内容的标签span,开始节点指定为这个span的文本节点，偏移量为文本内容的长度一半
+    range.setStart(document.getElementById('a').childNodes[1].childNodes[0], 3);
+    range.setEnd(document.getElementById('a').childNodes[2], 3);
+
+    //调用range.extractContents()提取range范围内的内容
+    range.extractContents();
+</script>

@@ -327,8 +327,8 @@ W3C体系中使用的是HSL，主要是由于其对称性，但是HSL和HSV是�
 
 比如用Shader去绘制一个Vue的logo:
 + 一个FrageMent Shader大概是由一个main函数的一个输入和一个输出来定义的
-+ 输入并不想js一样写在参数列表中，输入的就是gl_FragCoord变量（包含x,y坐标）
-+ 输出是一个gl_FragColor，
++ 输入并不像js一样写在参数列表中，输入的就是gl_FragCoord变量（包含x,y坐标）
++ 输出是一个gl_FragColor，将其赋值即可
 + 一个main的执行过程，就是根据点坐标计算这个点的颜色gl_FragColor的过程
 + 因为我们可以用GPU加速，所以main函数会在瞬间被执行数万遍，最后把颜色计算出来
 

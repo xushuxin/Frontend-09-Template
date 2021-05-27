@@ -1,0 +1,33 @@
+<div id="a"><span>1</span><p>2</p><a>3</a><div>4</div></div>
+<!-- 二级解法 -->
+<script>
+    let element = document.getElementById('a');
+    function reveseChildren(element){
+        var l = element.childNodes.length;
+        while(l-- > 0){
+            element.appendChild(element.childNodes[l])
+        }
+    }
+
+    reveseChildren(element)
+</script>
+<!-- 高级解法，使用Range -->
+<script>
+    let element = document.getElementById('a');
+    function reveseChildren(element){
+        
+       var range = new Range();
+       
+       range.selectNodeContents(element);//选中元素的所有内容
+
+       let fragment = range.extractContents();//从dom上取下所有内容
+
+       let l = fragment.childNodes.length;
+       while(l-- > 0){
+           fragment.appendChild(fragment.childNodes[l])
+       }
+       element.appendChild(fragment);
+    }
+
+    reveseChildren(element)
+</script>

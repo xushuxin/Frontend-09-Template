@@ -1,0 +1,15 @@
+<style title="hello">
+    a::before{
+        color:red;
+        content:"Hello"
+    }
+</style>
+
+<link rel="stylesheet" href="data:text/css,p%7Bcolor:blue%7D">
+<a>world</a>
+
+<script>
+    // 获取伪类元素的计算后属性
+    let aBefore = getComputedStyle(document.querySelector('a'),'::before');
+    console.log(aBefore.color);
+</script>
