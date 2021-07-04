@@ -1,5 +1,5 @@
 
-import {Component} from './framework'
+import {Component} from './framework.js'
 // 自定义的类
 export class Carousel extends Component{
     constructor(){
@@ -34,7 +34,7 @@ export class Carousel extends Component{
                 for(let offset of [-1, 0, 1]){  
                     let pos = current + offset;//计算当前是哪个图片，可能为负值，所以要把负值转为正值
                     console.log(pos,current, offset);
-                    pos = (pos + children.length) % children.length; //把-1转为3，-2转为2，-3转为1
+                    pos = (pos % children.length + children.length) % children.length; //把-1转为3，-2转为2，-3转为1
                     children[pos].style.transition = "none";//取消动画
                     children[pos].style.transform = `translateX(${ - pos * 500 + offset * 500 + x % 500}px)`;
                 }
@@ -48,7 +48,7 @@ export class Carousel extends Component{
                 // }
                 for(let offset of [0, - Math.sign(Math.round(x / 500) - x + 250 * Math.sign(x))]){  
                     let pos = position + offset;//计算当前是哪个图片，可能为负值，所以要把负值转为正值
-                    pos = (pos + children.length) % children.length; //把-1转为3，-2转为2，-3转为1
+                    pos = (pos % children.length  + children.length) % children.length; //把-1转为3，-2转为2，-3转为1
                     children[pos].style.transition = "";//加上css动画
                     children[pos].style.transform = `translateX(${ - pos * 500 + offset * 500}px)`;
                 }

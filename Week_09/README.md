@@ -1,6 +1,9 @@
 学习笔记
 
 #### HTML解析成DOM树
+HTML标准：https://html.spec.whatwg.org/multipage/
+搜索查看Tokenization部分
+
 第一步 HTML parse模块的文件拆分
 + 为了方便管理，把parser单独拆分到一个文件中
 + parser接收HTML文本作为参数，返回一颗DOM树

@@ -118,7 +118,7 @@ function computeCSS(element) {
 
             var sp = specificity(rule.selectors[0]);//统计几种标签出现的次数的数组
 
-            var computedStyle = element.computedStyle;
+            var computedStyle = element.computedStyle; 
             for (let { property, value } of rule.declarations) {
                 if (!computedStyle[property]) {
                     computedStyle[property] = {}
@@ -310,7 +310,7 @@ function afterAttributeName(c) {
         //     type: 'EOF'
         // })
         throw Error('parse error')
-    }
+    } 
 }
 //
 function beforeAttributeValue(c) {
