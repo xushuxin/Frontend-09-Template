@@ -187,36 +187,36 @@
 2. 初始化：`npm init`
 3. 新建src目录，并复制之前我们写的parseHTML的代码parser.js到src目录下
 4. 复制之前的package.json中的devDependencies和scripts，替换当前的package.json的对应部分
-```json
-    "scripts": {
-        "test": "mocha --require @babel/register",
-        "coverage": "nyc mocha",
-        "coverage2": "nyc mocha --require @babel/register"
-    },
-    "devDependencies": {
-        "@babel/core": "^7.14.6",
-        "@babel/register": "^7.14.5",
-        "@babel/preset-env": "^7.14.7",
-        "@istanbuljs/nyc-config-babel": "^3.0.0",
-        "babel-plugin-istanbul": "^6.0.0",
-        "mocha": "^9.0.1",
-        "nyc": "^15.1.0"
-    }
-```
+    ```json
+        "scripts": {
+            "test": "mocha --require @babel/register",
+            "coverage": "nyc mocha",
+            "coverage2": "nyc mocha --require @babel/register"
+        },
+        "devDependencies": {
+            "@babel/core": "^7.14.6",
+            "@babel/register": "^7.14.5",
+            "@babel/preset-env": "^7.14.7",
+            "@istanbuljs/nyc-config-babel": "^3.0.0",
+            "babel-plugin-istanbul": "^6.0.0",
+            "mocha": "^9.0.1",
+            "nyc": "^15.1.0"
+        }
+    ```
 5. 复制.nycrc和.babelrc两个文件到当前项目根目录
 6. 新建test目录，并新建一个测试文件parser-test.js(在进行单元测试时，mocha会自己到test到目录下找所有的js文件执行)
-parser-test.js
-```js
-var assert = require('assert');
-import { parseHTML } from '../src/parser.js';
-describe("parse html", function () {
-    it('<a>abc</a>', function () {
-        parseHTML('<a>abc</a>')
-        assert.equal(1, 1);
-    });
+    parser-test.js
+    ```js
+    var assert = require('assert');
+    import { parseHTML } from '../src/parser.js';
+    describe("parse html", function () {
+        it('<a>abc</a>', function () {
+            parseHTML('<a>abc</a>')
+            assert.equal(1, 1);
+        });
 
-})
-```
+    })
+    ```
 7. 运行`npm run test`，成功执行单元测试
 8. 运行`npm run coverage`，发现测试的覆盖率目前很低
 
@@ -248,14 +248,15 @@ laynch.json
 }
 ```
 10. 给.babelrc也加上sourceMaps
-```.babelrc
-{
-    "presets":["@babel/preset-env"],
-    "plugins": ["istanbul"],
-    "sourceMaps": "inline"
-}
-```
-这样我们就可以进行本地调试了
+    ```.babelrc
+    {
+        "presets":["@babel/preset-env"],
+        "plugins": ["istanbul"],
+        "sourceMaps": "inline"
+    }
+    ```
+    这样我们就可以进行本地调试了
+
 11. 根据npm run coverage 的结果我们进行测试用例编写
 + Funcs调用达到100%,Lines达到90%算比较合格的单元测试
 + Uncovered Line可以让我们知道哪些行代码还没有测试
@@ -263,25 +264,25 @@ laynch.json
 #### 将单元测试集成到generator中
 1. 复制之前的generator-vue到当前目录，修改为generator-toytool(包括package.json中的name)
 2. 下载单元测试需要的相关依赖 
-./generator-toytool/generators/app/index.js
-```js
- // 安装单元测试相关的依赖
-this.npmInstall(['mocha', 'nyc', '@babel/core', '@babel/register', '@babel/preset-env', '@istanbuljs/nyc-config-babel', 'babel-plugin-istanbul'], { 'save-dev': true });
-```
+    ./generator-toytool/generators/app/index.js
+    ```js
+    // 安装单元测试相关的依赖
+    this.npmInstall(['mocha', 'nyc', '@babel/core', '@babel/register', '@babel/preset-env', '@istanbuljs/nyc-config-babel', 'babel-plugin-istanbul'], { 'save-dev': true });
+    ```
 3. 将.babelrc和.nycrc文件拷贝到templates目录下作为模板，并添加如下代码
 ./generator-toytool/generators/app/index.js
-```js
-// 拷贝.babelrc配置文件
-this.fs.copyTpl(
-    this.templatePath('.babelrc'),
-    this.destinationPath('.babelrc')
-)
-// 拷贝.nycrc配置文件
-this.fs.copyTpl(
-    this.templatePath('.nycrc'),
-    this.destinationPath('.nycrc')
-)
-```
+    ```js
+    // 拷贝.babelrc配置文件
+    this.fs.copyTpl(
+        this.templatePath('.babelrc'),
+        this.destinationPath('.babelrc')
+    )
+    // 拷贝.nycrc配置文件
+    this.fs.copyTpl(
+        this.templatePath('.nycrc'),
+        this.destinationPath('.nycrc')
+    )
+    ```
 4. 单元测试的示例文件
 + 在templates目录下创建单元测试的示例文件sample-test.js
     ```js
@@ -322,21 +323,21 @@ this.fs.copyTpl(
 
 6. package.json生成配置修改scripts
 添加test、coverage、build等脚本
-```js
-const pkgJson = {
-    "name": answers.name,
-    "version": "1.0.0",
-    "description": "",
-    "main": "generators/app/index.js",
-    "scripts": {
-        "test": "mocha --require @babel/register",
-        "coverage": "nyc mocha",
-        "build": "webpack"
-    },
-    "author": "",
-    "license": "ISC"
-};
-```
+    ```js
+    const pkgJson = {
+        "name": answers.name,
+        "version": "1.0.0",
+        "description": "",
+        "main": "generators/app/index.js",
+        "scripts": {
+            "test": "mocha --require @babel/register",
+            "coverage": "nyc mocha",
+            "build": "webpack"
+        },
+        "author": "",
+        "license": "ISC"
+    };
+    ```
 7. 本地调试
 + 将本地全局的generator-toytool link到当前generator-toytool目录
     在generator-toytool根目录运行
@@ -345,19 +346,19 @@ const pkgJson = {
     ```
 + 新建一个demo项目myvueapp，并进入项目根目录
 运行
-```shell
-yo toytool
-```
+    ```shell
+    yo toytool
+    ```
 + 初始化完成后依次测试 test、coverage、build脚本
-```shell
-npm run test
-```
-```shell
-npm run coverage
-```
-```shell
-npm run build
-```
+    ```shell
+    npm run test
+    ```
+    ```shell
+    npm run coverage
+    ```
+    ```shell
+    npm run build
+    ```
 
 
 
